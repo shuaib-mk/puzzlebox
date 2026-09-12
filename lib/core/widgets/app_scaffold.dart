@@ -114,6 +114,17 @@ class SettingsSheet extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 20),
+          Text(
+            'Made by q04ti',
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          const Text('Independent developer. Creator of Puzzlebox.'),
+          const SizedBox(height: 6),
+          const Text(
+            'Designed and developed by q04ti. Free puzzles, made for everyone who loves to play.',
+          ),
+          const SizedBox(height: 20),
           if (helpText != null)
             ExpansionTile(
               title: const Text('How to play'),
@@ -149,7 +160,9 @@ class SettingsSheet extends ConsumerWidget {
                 onPressed: () => showLicensePage(
                   context: context,
                   applicationName: 'Puzzlebox',
-                  applicationVersion: '2.1.0',
+                  applicationVersion: '2.1.1',
+                  applicationLegalese:
+                      'Puzzlebox © 2026 q04ti. Third-party components retain their own licenses.',
                 ),
                 child: const Text('Open-source licenses'),
               ),

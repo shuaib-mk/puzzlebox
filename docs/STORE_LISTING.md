@@ -1,6 +1,10 @@
 # Puzzlebox
 
+Developer: q04ti — independent developer
+
 Short description: Eleven free offline word, number and pattern games. Keep your mind playing.
+
+Designed and developed by q04ti, an independent developer.
 
 Make a little time for a puzzle. Puzzlebox brings eleven word, number and pattern games together in one free offline collection.
 

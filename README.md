@@ -1,5 +1,7 @@
 # Puzzlebox
 
+Designed and developed by **q04ti**, an independent developer.
+
 Eleven offline puzzle games. Unlimited play, free hints, local progress, and four color themes. No ads, subscriptions, accounts, energy meters, or paid puzzle packs.
 
 ## Download for Android
@@ -69,4 +71,4 @@ The visual test writes review screenshots into a sibling `previews/` folder. It 
 - [Design system](docs/DESIGN.md)
 - [Privacy](docs/PRIVACY.md)
 
-Roboto is bundled for consistent offline typography; its license is in `assets/fonts/roboto_license.txt`. Existing word-list assets from the supplied project were retained.
+Nunito is bundled for offline typography. Its license is in `assets/fonts/Nunito-OFL.txt`; the accepted English word list license is in `assets/words/english-LICENSE.md`. Third-party components retain their own licenses.
