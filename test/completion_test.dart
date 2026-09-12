@@ -60,11 +60,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('pips_slot_3')));
       await tester.pump();
       expect(PracticeService(prefs).getSolvedCount('pips'), 1);
-      expect(PuzzleProgression(prefs).index('pips'), 1);
+      expect(PuzzleProgression(prefs).index('pips:Easy'), 1);
       await tester.pump(const Duration(milliseconds: 1500));
       await tester.pump();
 
-      expect(PuzzleProgression(prefs).index('pips'), 1);
+      expect(PuzzleProgression(prefs).index('pips:Easy'), 1);
       expect(
         tester
             .widgetList<Text>(find.byType(Text))

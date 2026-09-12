@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +10,15 @@ import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Nunito',
+    ], await rootBundle.loadString('assets/fonts/Nunito-OFL.txt'));
+    yield LicenseEntryWithLineBreaks([
+      'English word list (dwyl)',
+    ], await rootBundle.loadString('assets/words/english-LICENSE.md'));
+  });
 
   // Load word lists before the app starts
   await WordList.init();

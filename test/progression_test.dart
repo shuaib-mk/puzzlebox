@@ -16,6 +16,37 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
+  test(
+    'Daily Five retains typed input, wins once, and serializes Next',
+    () async {
+      await WordList.init();
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      final provider = dailyFiveProvider(GameMode.practice);
+      final notifier = container.read(provider.notifier);
+      final answer = container.read(provider).answer;
+      notifier.addLetter(answer[0]);
+      final restored = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(restored.dispose);
+      expect(restored.read(provider).currentInput, [answer[0]]);
+      for (final c in answer.substring(1).split('')) {
+        notifier.addLetter(c);
+      }
+      await notifier.submitGuess();
+      expect(container.read(provider).phase, GamePhase.won);
+      expect(PracticeService(prefs).getSolvedCount('daily_five'), 1);
+      await Future.wait([notifier.nextPuzzle(), notifier.nextPuzzle()]);
+      expect(PuzzleProgression(prefs).index('daily_five'), 1);
+      expect(container.read(provider).phase, GamePhase.playing);
+      expect(WordList.isValidGuess('CRANE'), isTrue);
+      expect(WordList.isValidGuess('ZZZZZ'), isFalse);
+    },
+  );
   test('Completion is idempotent and preserves legacy totals', () async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('sudoku_practice', 7);

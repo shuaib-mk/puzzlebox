@@ -45,13 +45,13 @@ class PuzzleProgression {
     }
   }
 
-  int seed(String game) {
+  int seed(String game, {String? progressionKey}) {
     const key = 'installation_puzzle_seed';
     var base = prefs.getInt(key);
     if (base == null) {
       base = DateTime.now().microsecondsSinceEpoch;
       prefs.setInt(key, base);
     }
-    return stableSeed('$base:$game:${index(game)}');
+    return stableSeed('$base:$game:${index(progressionKey ?? game)}');
   }
 }

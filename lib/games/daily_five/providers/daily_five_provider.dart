@@ -35,6 +35,7 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
 
   int _revision = 0;
   bool _disposed = false;
+  bool _advancing = false;
   String _answer() {
     final difficulty =
         ref
@@ -56,11 +57,17 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
   }
 
   Future<void> nextPuzzle() async {
+    if (_advancing || _disposed) return;
+    _advancing = true;
     _revision++;
-    await ref.read(puzzleProgressionProvider).advance(_gameType);
-    if (_disposed) return;
-    state = DailyFiveState.initial(answer: _answer(), puzzleNumber: -1);
-    await _saveState();
+    try {
+      await ref.read(puzzleProgressionProvider).advance(_gameType);
+      if (_disposed) return;
+      state = DailyFiveState.initial(answer: _answer(), puzzleNumber: -1);
+      await _saveState();
+    } finally {
+      _advancing = false;
+    }
   }
 
   @override
@@ -83,7 +90,8 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
   }
 
   void addLetter(String letter) {
-    if (state.phase != GamePhase.playing) return;
+    if (!RegExp(r'^[a-zA-Z]$').hasMatch(letter)) return;
+    if (_advancing || state.phase != GamePhase.playing) return;
     if (state.isAnimating) return;
     if (state.currentInput.length >= DailyFiveState.wordLength) return;
 
@@ -94,7 +102,7 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
   }
 
   void deleteLetter() {
-    if (state.phase != GamePhase.playing) return;
+    if (_advancing || state.phase != GamePhase.playing) return;
     if (state.isAnimating) return;
     if (state.currentInput.isEmpty) return;
 
@@ -104,7 +112,7 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
   }
 
   Future<void> submitGuess() async {
-    if (state.phase != GamePhase.playing) return;
+    if (_advancing || state.phase != GamePhase.playing) return;
     if (state.isAnimating) return;
     if (state.currentInput.length < DailyFiveState.wordLength) {
       _triggerShake();
@@ -212,6 +220,7 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
     );
     newBoard[state.currentRow] = row;
     state = state.copyWith(board: newBoard);
+    _saveState();
   }
 
   void _triggerShake() {
@@ -235,6 +244,7 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
           )
           .toList(),
       'currentRow': state.currentRow,
+      'input': state.currentInput,
       'keyStates': state.keyStates.map((k, v) => MapEntry(k, v.index)),
       'phase': state.phase.index,
     });
@@ -273,10 +283,23 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
           ? (json['answer'] as String)
           : WordList.answerForPuzzle(puzzleNum);
 
+      final row = json['currentRow'] as int;
+      final phase = GamePhase.values[json['phase'] as int];
+      final input = List<String>.from(json['input'] ?? []);
+      if (board.length != 6 ||
+          board.any((r) => r.length != 5) ||
+          row < 0 ||
+          row > 6 ||
+          (phase == GamePhase.playing && row == 6) ||
+          !RegExp(r'^[A-Z]{5}$').hasMatch(answer) ||
+          input.length > 5 ||
+          input.any((c) => !RegExp(r'^[A-Z]$').hasMatch(c))) {
+        return null;
+      }
       return DailyFiveState(
         board: board,
-        currentRow: json['currentRow'] as int,
-        currentInput: [],
+        currentRow: row,
+        currentInput: input,
         keyStates: keyStates,
         answer: answer,
         phase: GamePhase.values[json['phase'] as int],

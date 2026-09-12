@@ -26,14 +26,7 @@ void main() {
       ..addFont(
         Future.value(
           ByteData.sublistView(
-            File('assets/fonts/roboto-regular.ttf').readAsBytesSync(),
-          ),
-        ),
-      )
-      ..addFont(
-        Future.value(
-          ByteData.sublistView(
-            File('assets/fonts/roboto-bold.ttf').readAsBytesSync(),
+            File('assets/fonts/Nunito.ttf').readAsBytesSync(),
           ),
         ),
       );
@@ -41,7 +34,7 @@ void main() {
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
-    await WordList.init();
+    await tester.runAsync(WordList.init);
     final cases = <(String, Widget, int, Brightness)>[
       ('home-ocean', const HomeScreen(), 0, Brightness.light),
       ('home-orchard', const HomeScreen(), 1, Brightness.light),

@@ -1,5 +1,5 @@
+import '../services/privacy_notice.dart';
 import '../services/game_rules.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
@@ -28,45 +28,38 @@ class AppScaffold extends ConsumerWidget {
         ? Theme.of(context).colorScheme.surfaceContainerHighest
         : Theme.of(context).colorScheme.surfaceContainerHighest;
 
-    return Listener(
-      onPointerDown: (_) {
-        final settings = ref.read(settingsProvider);
-        if (settings.hapticsEnabled) HapticFeedback.selectionClick();
-        if (settings.soundEnabled) SystemSound.play(SystemSoundType.click);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(title.split(' — ').first),
-          automaticallyImplyLeading: showBackButton,
-          actions: [
-            ...?actions,
-            IconButton(
-              icon: Icon(Icons.palette_outlined),
-              tooltip: 'Appearance & settings',
-              onPressed: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => SingleChildScrollView(
-                  child: SettingsSheet(helpText: rulesFor(title)),
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title.split(' — ').first),
+        automaticallyImplyLeading: showBackButton,
+        actions: [
+          ...?actions,
+          IconButton(
+            icon: Icon(Icons.palette_outlined),
+            tooltip: 'Appearance & settings',
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => SingleChildScrollView(
+                child: SettingsSheet(helpText: rulesFor(title)),
               ),
             ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(1),
-            child: Divider(height: 1, thickness: 1, color: dividerColor),
           ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, thickness: 1, color: dividerColor),
         ),
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 680),
-              child: body,
-            ),
-          ),
-        ),
-        bottomNavigationBar: bottomNavigationBar,
       ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 680),
+            child: body,
+          ),
+        ),
+      ),
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }
@@ -131,6 +124,37 @@ class SettingsSheet extends ConsumerWidget {
                 ),
               ],
             ),
+          Wrap(
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.privacy_tip_outlined),
+                label: const Text('Privacy'),
+                onPressed: () => showDialog<void>(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: const Text('Your data stays yours'),
+                    content: const SingleChildScrollView(
+                      child: Text(privacyNotice),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(c),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => showLicensePage(
+                  context: context,
+                  applicationName: 'Puzzlebox',
+                  applicationVersion: '2.1.0',
+                ),
+                child: const Text('Open-source licenses'),
+              ),
+            ],
+          ),
           Text(
             'Make it yours',
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -177,7 +201,7 @@ class SettingsSheet extends ConsumerWidget {
           ),
           Divider(),
           _SettingRow(
-            label: 'Hard Mode',
+            label: 'Daily Five hard mode',
             subtitle: 'Must use revealed hints in subsequent guesses',
             child: Switch(
               value: settings.hardModeEnabled,

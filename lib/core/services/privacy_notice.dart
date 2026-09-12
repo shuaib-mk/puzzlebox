@@ -1,4 +1,4 @@
-Puzzlebox privacy
+const privacyNotice = '''Puzzlebox privacy
 Updated 13 September 2026
 
 Puzzlebox works offline and has no accounts, advertising, analytics, purchases, or developer-operated cloud services. Puzzlebox does not transmit your gameplay or settings to its developer.
@@ -9,4 +9,4 @@ Sharing a result opens Android's share sheet. Only the result you choose to shar
 
 Puzzlebox does not request access to contacts, precise location, microphone, camera, or photos. It does not sell personal data.
 
-For questions or deletion guidance, contact the maintainer through github.com/shuaib-mk/puzzlebox/issues. Do not include private information in a public issue.
+For questions or deletion guidance, contact the maintainer through github.com/shuaib-mk/puzzlebox/issues. Do not include private information in a public issue.''';

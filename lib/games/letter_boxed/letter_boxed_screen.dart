@@ -37,6 +37,7 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
 
   List<String> _solution = [];
   bool _loading = true;
+  bool _generationFailed = false;
   int _request = 0;
   Set<String> get _dictionary => {...WordList.answers, ...clueBank.keys};
   late List<String> _top;
@@ -74,7 +75,10 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
 
   Future<void> _loadBoxedPuzzle() async {
     final request = ++_request;
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _generationFailed = false;
+    });
     try {
       final input = (
         _dictionary.toList(),
@@ -103,6 +107,7 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
       });
     } catch (_) {
       if (mounted && request == _request) {
+        setState(() => _generationFailed = true);
         showPuzzleHint('Could not prepare this box. Tap Next to try another.');
       }
     }
@@ -124,7 +129,7 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
   }
 
   void _onLetterTap(String letter, int side) {
-    if (_isSolved) return;
+    if (_isSolved || _currentWord.length >= 24) return;
     if (_lastSide == side) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -142,7 +147,8 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
 
   void _submitWord() {
     if (_currentWord.length < 3 || _isSolved) return;
-    if (!_dictionary.contains(_currentWord)) {
+    if (!_dictionary.contains(_currentWord) &&
+        !WordList.dictionary.contains(_currentWord)) {
       showPuzzleHint('Not in the bundled word list.');
       return;
     }
@@ -223,7 +229,24 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
           ? Column(
               children: [
                 buildPracticeModeToggle(),
-                Expanded(child: Center(child: CircularProgressIndicator())),
+                Expanded(
+                  child: Center(
+                    child: _generationFailed
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('This puzzle could not be prepared.'),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                onPressed: _loadBoxedPuzzle,
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Try again'),
+                              ),
+                            ],
+                          )
+                        : const CircularProgressIndicator(),
+                  ),
+                ),
               ],
             )
           : Column(
@@ -253,6 +276,8 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
                           alignment: Alignment.center,
                           child: Text(
                             _currentWord,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
@@ -382,6 +407,28 @@ class _LetterBoxedScreenState extends ConsumerState<LetterBoxedScreen>
                               OutlinedButton(
                                 onPressed: _clearCurrent,
                                 child: Text('Clear'),
+                              ),
+                              IconButton(
+                                tooltip: 'Delete letter',
+                                icon: const Icon(Icons.backspace_outlined),
+                                onPressed: () {
+                                  final minimum = _completedWords.isEmpty
+                                      ? 0
+                                      : 1;
+                                  if (_currentWord.length <= minimum) return;
+                                  setState(() {
+                                    _currentWord = _currentWord.substring(
+                                      0,
+                                      _currentWord.length - 1,
+                                    );
+                                    _lastSide = _currentWord.isEmpty
+                                        ? null
+                                        : _side(
+                                            _currentWord[_currentWord.length -
+                                                1],
+                                          );
+                                  });
+                                },
                               ),
                               IconButton(
                                 tooltip: 'Undo word',

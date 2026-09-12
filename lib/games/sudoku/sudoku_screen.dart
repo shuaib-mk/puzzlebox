@@ -34,6 +34,7 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
 
   List<int> _solution = [];
   bool _loading = true;
+  bool _generationFailed = false;
   int _request = 0;
   final List<(List<List<int>>, List<List<Set<int>>>)> _history = [];
   @override
@@ -67,7 +68,10 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
   Future<void> _loadPuzzle() async {
     final request = ++_request;
     _timer?.cancel();
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _generationFailed = false;
+    });
     try {
       final puzzle = await compute(generateSudoku, puzzleRequest);
       if (!mounted || request != _request) return;
@@ -91,6 +95,7 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
       _startTimer();
     } catch (_) {
       if (mounted && request == _request) {
+        setState(() => _generationFailed = true);
         showPuzzleHint('Generation failed. Tap Next to retry.');
       }
     }
@@ -166,6 +171,15 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
       } else {
         _userGrid[_selectedRow][_selectedCol] = num;
         _pencilGrid[_selectedRow][_selectedCol].clear();
+        for (var r = 0; r < 9; r++) {
+          for (var c = 0; c < 9; c++) {
+            if (r == _selectedRow ||
+                c == _selectedCol ||
+                (r ~/ 3 == _selectedRow ~/ 3 && c ~/ 3 == _selectedCol ~/ 3)) {
+              _pencilGrid[r][c].remove(num);
+            }
+          }
+        }
         _checkWin();
       }
     });
@@ -270,7 +284,24 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
           ? Column(
               children: [
                 buildPracticeModeToggle(),
-                Expanded(child: Center(child: CircularProgressIndicator())),
+                Expanded(
+                  child: Center(
+                    child: _generationFailed
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('This puzzle could not be prepared.'),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                onPressed: _loadPuzzle,
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Try again'),
+                              ),
+                            ],
+                          )
+                        : const CircularProgressIndicator(),
+                  ),
+                ),
               ],
             )
           : Column(
@@ -341,6 +372,7 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
                                   : 0.5;
 
                               return GestureDetector(
+                                key: ValueKey('sudoku_${r}_$c'),
                                 onTap: () => setState(() {
                                   _selectedRow = r;
                                   _selectedCol = c;
@@ -471,6 +503,7 @@ class _SudokuScreenState extends ConsumerState<SudokuScreen>
                     9,
                     (i) => Expanded(
                       child: InkWell(
+                        key: ValueKey('sudoku_number_${i + 1}'),
                         onTap: () => _onNumberTap(i + 1),
                         child: AnimatedContainer(
                           duration: MediaQuery.disableAnimationsOf(context)

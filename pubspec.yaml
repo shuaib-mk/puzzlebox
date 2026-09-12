@@ -2,7 +2,7 @@ name: puzzlebox
 description: "Puzzlebox — Daily word & logic puzzle games"
 publish_to: 'none'
 
-version: 2.0.0+2
+version: 2.1.0+3
 
 environment:
   sdk: ^3.12.2
@@ -39,10 +39,11 @@ flutter:
   assets:
     - assets/words/daily_five_answers.txt
     - assets/words/daily_five_valid.txt
+    - assets/words/english.txt
+    - assets/words/english-LICENSE.md
+    - assets/fonts/Nunito-OFL.txt
 
   fonts:
     - family: PuzzleSans
       fonts:
-        - asset: assets/fonts/roboto-regular.ttf
-        - asset: assets/fonts/roboto-bold.ttf
-          weight: 700
+        - asset: assets/fonts/Nunito.ttf

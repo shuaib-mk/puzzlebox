@@ -30,6 +30,7 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
   List<List<int>> _target = [];
   late List<DotNode> _dots;
   final List<List<int>> _userConnections = [];
+  final List<List<List<int>>> _history = [];
   int? _selectedDotId;
   bool _isSolved = false;
 
@@ -111,6 +112,7 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
     // Assign computed degree target to each DotNode
     _dots = dots.map((d) => DotNode(d.id, d.pos, degrees[d.id])).toList();
     _target = targetConns;
+    _history.clear();
     _userConnections.clear();
     _selectedDotId = null;
     _isSolved = false;
@@ -125,6 +127,7 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
         _selectedDotId = id;
       } else {
         if (_selectedDotId != id) {
+          _history.add(_userConnections.map((e) => List<int>.of(e)).toList());
           final pair = [_selectedDotId!, id]..sort();
           if (_userConnections.any((c) => c[0] == pair[0] && c[1] == pair[1])) {
             _userConnections.removeWhere(
@@ -181,10 +184,32 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
 
   @override
   Map<String, dynamic> captureProgress() =>
-      _isSolved ? {} : {'edges': _userConnections};
+      _isSolved ? {} : {'edges': _userConnections, 'history': _history};
   @override
   void restoreProgress(Map<String, dynamic> d) {
-    _userConnections.addAll((d['edges'] as List).map((e) => List<int>.from(e)));
+    final edges = (d['edges'] as List).map((e) => List<int>.from(e)).toList();
+    if (edges.any(
+          (e) =>
+              e.length != 2 || e[0] < 1 || e[1] > _dots.length || e[0] >= e[1],
+        ) ||
+        edges.map((e) => e.join(':')).toSet().length != edges.length) {
+      return;
+    }
+    _userConnections.addAll(edges);
+    // History from an older app is optional; validate before accepting it.
+    final history = d['history'];
+    if (history is List) {
+      for (final entry in history) {
+        final previous = (entry as List).map((e) => List<int>.from(e)).toList();
+        if (previous.any(
+          (e) =>
+              e.length != 2 || e[0] < 1 || e[1] > _dots.length || e[0] >= e[1],
+        )) {
+          break;
+        }
+        _history.add(previous);
+      }
+    }
   }
 
   @override
@@ -211,8 +236,13 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
                 icon: Icon(Icons.undo),
                 label: Text('Undo'),
                 onPressed: () {
-                  if (_userConnections.isNotEmpty && !_isSolved) {
-                    setState(() => _userConnections.removeLast());
+                  if (_history.isNotEmpty && !_isSolved) {
+                    setState(() {
+                      _userConnections
+                        ..clear()
+                        ..addAll(_history.removeLast());
+                      _selectedDotId = null;
+                    });
                   }
                 },
               ),
@@ -276,6 +306,7 @@ class _VertexScreenState extends ConsumerState<VertexScreen>
                           left: dot.pos.dx - 20,
                           top: dot.pos.dy - 20,
                           child: GestureDetector(
+                            key: ValueKey('vertex_dot_${dot.id}'),
                             onTap: () => _onDotTap(dot.id),
                             child: Container(
                               width: 40,

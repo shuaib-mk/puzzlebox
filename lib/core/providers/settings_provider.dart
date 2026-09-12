@@ -21,13 +21,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
   @override
   SettingsState build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    final themeIndex = prefs.getInt(_themeKey) ?? ThemeMode.dark.index;
+    final themeIndex = prefs.getInt(_themeKey) ?? ThemeMode.light.index;
     final haptics = prefs.getBool(_hapticsKey) ?? true;
     final hardMode = prefs.getBool(_hardModeKey) ?? false;
     final sound = prefs.getBool(_soundKey) ?? true;
     return SettingsState(
       themeMode: ThemeMode.values[themeIndex.clamp(0, 2)],
-      palette: (prefs.getInt('settings_palette') ?? 0).clamp(0, 3),
+      palette: (prefs.getInt('settings_palette') ?? 1).clamp(0, 3),
       hapticsEnabled: haptics,
       hardModeEnabled: hardMode,
       soundEnabled: sound,

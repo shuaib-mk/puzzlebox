@@ -6,7 +6,7 @@ abstract final class AppTheme {
   static ThemeData build(Brightness brightness, int palette) {
     const seeds = [
       Color(0xFF2458A6),
-      Color(0xFF316449),
+      Color(0xFF3D7C16),
       Color(0xFFAD4930),
       Color(0xFF7048A5),
     ];
@@ -44,14 +44,14 @@ abstract final class AppTheme {
           foregroundColor: colors.onPrimary,
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 18),
-          elevation: 2,
+          elevation: 4,
           textStyle: const TextStyle(
             fontFamily: 'PuzzleSans',
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
@@ -59,9 +59,9 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
           foregroundColor: colors.onSurface,
-          side: BorderSide(color: colors.outlineVariant),
+          side: BorderSide(color: colors.outlineVariant, width: 2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
@@ -69,7 +69,7 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: colors.inverseSurface,
         contentTextStyle: TextStyle(color: colors.onInverseSurface),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
       dividerTheme: DividerThemeData(color: colors.outlineVariant, space: 16),
     );

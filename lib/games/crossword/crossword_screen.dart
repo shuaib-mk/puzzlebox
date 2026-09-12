@@ -205,6 +205,7 @@ class _CrosswordState extends ConsumerState<CrosswordScreen>
                           _letters[i].isNotEmpty &&
                           _letters[i] != _puzzle.solution[i];
                       return InkWell(
+                        key: ValueKey('crossword_cell_$i'),
                         onTap: () => setState(() {
                           final choices = _puzzle.entries
                               .where((e) => e.cells(_puzzle.size).contains(i))

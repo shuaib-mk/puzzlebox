@@ -14,6 +14,7 @@ import '../games/tiles/tiles_screen.dart';
 import '../games/letter_boxed/letter_boxed_screen.dart';
 import '../games/vertex/vertex_screen.dart';
 import 'unified_stats_screen.dart';
+import '../core/widgets/puzzle_pal.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -142,63 +143,92 @@ class _HomeState extends ConsumerState<HomeScreen> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(28),
+                border: Border(
+                  bottom: BorderSide(
+                    color: colors.primary.withValues(alpha: .25),
+                    width: 5,
+                  ),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'A LITTLE EVERY DAY. AS MUCH AS YOU LIKE.',
-                    style: TextStyle(
-                      fontSize: 10,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.w800,
-                      color: colors.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Make room\nfor a little wonder.',
-                    style: TextStyle(
-                      fontSize: 34,
-                      height: 1.08,
-                      letterSpacing: -1.3,
-                      fontWeight: FontWeight.w800,
-                      color: colors.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '11 games. Always free. Play offline.',
-                    style: TextStyle(color: colors.onPrimaryContainer),
-                  ),
-                  const SizedBox(height: 20),
                   Row(
                     children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        size: 18,
-                        color: colors.onPrimaryContainer,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '$solved unlimited puzzles solved',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: colors.onPrimaryContainer,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ready, set,\npuzzle!',
+                              style: TextStyle(
+                                fontSize: 32,
+                                height: 1.05,
+                                fontWeight: FontWeight.w900,
+                                color: colors.onPrimaryContainer,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'A fresh challenge.\nA little victory.',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: colors.onPrimaryContainer,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      const PuzzlePal(size: 100),
                     ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '11 games. Always free. Play offline.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          color: colors.primary,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '$solved puzzles solved',
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             const Text(
-              'Find your next small win',
+              'Pick your playground',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -220,17 +250,26 @@ class _HomeState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 16),
             ...games.map((game) {
+              final accent = [
+                const Color(0xFF157A6E),
+                const Color(0xFF286CB0),
+                const Color(0xFF8652B4),
+                const Color(0xFFA96708),
+                const Color(0xFFB84562),
+              ][_games.indexOf(game) % 5];
               final count = ref
                   .read(practiceServiceProvider)
                   .getSolvedCount(game.$1);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Material(
-                  color: colors.surfaceContainerLow,
+                  color: colors.surface,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    side: BorderSide(color: colors.outlineVariant),
+                    borderRadius: BorderRadius.circular(22),
+                    side: BorderSide(color: colors.outlineVariant, width: 2),
                   ),
+                  elevation: 1,
+                  shadowColor: Colors.black26,
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     key: ValueKey('${game.$1}_card'),
@@ -249,12 +288,16 @@ class _HomeState extends ConsumerState<HomeScreen> {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: colors.secondaryContainer,
+                              color: accent.withValues(alpha: .12),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               game.$4,
-                              color: colors.onSecondaryContainer,
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? colors.onSurface
+                                  : accent,
                               size: 28,
                             ),
                           ),

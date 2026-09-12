@@ -21,6 +21,7 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   String difficulty = 'Medium';
   int _generation = 0;
   bool _finishing = false;
+  bool _transitioning = false;
   bool _advanceReserved = false;
   Timer? _advanceTimer;
   Timer? _saveTimer;
@@ -33,11 +34,13 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   void startSession() {
     _saveTimer?.cancel();
     _prefs = ref.read(sharedPreferencesProvider);
-    _sessionKey = 'session_v1_$gameType';
+    _sessionKey = 'session_v2_${gameType}_${mode.name}_$difficulty';
     _sessionId = puzzleRequest.id;
     _sessionMode = mode.name;
     try {
-      final raw = _prefs!.getString(_sessionKey!);
+      final raw =
+          _prefs!.getString(_sessionKey!) ??
+          _prefs!.getString('session_v1_$gameType');
       if (raw != null) {
         final data = jsonDecode(raw) as Map<String, dynamic>;
         if (data['id'] == puzzleRequest.id && data['mode'] == mode.name) {
@@ -47,6 +50,7 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     } catch (_) {
       /* An invalid older save must not prevent play. */
     }
+    _prefs!.remove('session_v1_$gameType');
     _saveTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) => _saveSession(),
@@ -63,10 +67,12 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     );
   }
 
+  String get _progressionKey => '$gameType:$difficulty';
+
   int puzzleSeed() => mode == GameMode.daily
       ? stableSeed('$gameType:$_dayKey:$difficulty')
       : stableSeed(
-          '${ref.read(puzzleProgressionProvider).seed(gameType)}:$difficulty',
+          '${ref.read(puzzleProgressionProvider).seed(gameType, progressionKey: _progressionKey)}:$difficulty',
         );
   PuzzleRequest get puzzleRequest => PuzzleRequest(
     gameType,
@@ -84,12 +90,19 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         ref.read(sharedPreferencesProvider).getString('difficulty_$gameType') ??
         'Medium';
     if (!['Easy', 'Medium', 'Hard'].contains(difficulty)) difficulty = 'Medium';
+    final prefs = ref.read(sharedPreferencesProvider);
+    for (final level in ['Easy', 'Medium', 'Hard']) {
+      final key = 'progress_v1_$gameType:$level';
+      if (!prefs.containsKey(key)) {
+        prefs.setInt(key, ref.read(puzzleProgressionProvider).index(gameType));
+      }
+    }
   }
 
   Future<void> recordPracticeWin() async => finishPuzzle();
   void recordPracticeLoss() => finishPuzzle(won: false);
-  Future<void> finishPuzzle({bool won = true}) async {
-    if (_finishing || !mounted) return;
+  Future<void> finishPuzzle({bool won = true, String? explanation}) async {
+    if (_finishing || _transitioning || !mounted) return;
     _finishing = true;
     _saveTimer?.cancel();
     if (_sessionKey != null) _prefs?.remove(_sessionKey!);
@@ -106,9 +119,26 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         setState(() => _practiceSolvedCount = count);
       }
       if (!mounted || generation != _generation) return;
-      await ref.read(puzzleProgressionProvider).advance(gameType);
+      await ref.read(puzzleProgressionProvider).advance(_progressionKey);
       _advanceReserved = true;
       if (!mounted || generation != _generation) return;
+      if (explanation != null) {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(won ? 'Nicely solved!' : 'Here are the connections'),
+            content: SingleChildScrollView(child: Text(explanation)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Next puzzle'),
+              ),
+            ],
+          ),
+        );
+        if (mounted && generation == _generation) await nextPuzzle();
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -132,12 +162,14 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Future<void> nextPuzzle() async {
+    if (_transitioning || (_finishing && !_advanceReserved)) return;
+    _transitioning = true;
     _advanceTimer?.cancel();
     _saveTimer?.cancel();
     final generation = ++_generation;
     try {
       if (!_advanceReserved) {
-        await ref.read(puzzleProgressionProvider).advance(gameType);
+        await ref.read(puzzleProgressionProvider).advance(_progressionKey);
       }
       _advanceReserved = false;
       if (!mounted || generation != _generation) return;
@@ -150,6 +182,8 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       if (mounted) {
         showPuzzleHint('Unable to save. Your current puzzle is still here.');
       }
+    } finally {
+      _transitioning = false;
     }
   }
 
@@ -167,7 +201,9 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         mode: mode,
         practiceSolvedCount: practiceSolvedCount,
         onModeChanged: (value) {
-          if (value == mode) return;
+          if (value == mode || _transitioning || _finishing) return;
+          _saveSession();
+          _saveTimer?.cancel();
           _advanceTimer?.cancel();
           _generation++;
           _advanceReserved = false;
@@ -191,7 +227,14 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
                     .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                     .toList(),
                 onChanged: (value) {
-                  if (value == null || value == difficulty) return;
+                  if (value == null ||
+                      value == difficulty ||
+                      _transitioning ||
+                      _finishing) {
+                    return;
+                  }
+                  _saveSession();
+                  _saveTimer?.cancel();
                   _advanceTimer?.cancel();
                   _generation++;
                   _advanceReserved = false;

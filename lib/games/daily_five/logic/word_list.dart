@@ -5,10 +5,18 @@ class WordList {
   WordList._();
 
   static List<String>? _answers;
-  static List<String>? _validGuesses;
+  static Set<String>? _validGuesses;
+  static Set<String> dictionary = {};
 
   /// Load both word lists from assets. Call once at app start.
   static Future<void> init() async {
+    if (_answers != null) return;
+    final english = await rootBundle.loadString('assets/words/english.txt');
+    dictionary = english
+        .split('\n')
+        .map((w) => w.trim().toUpperCase())
+        .where((w) => w.length >= 3)
+        .toSet();
     final answersRaw = await rootBundle.loadString(
       'assets/words/daily_five_answers.txt',
     );
@@ -32,7 +40,7 @@ class WordList {
     for (final a in _answers!) {
       validSet.add(a);
     }
-    _validGuesses = validSet.toList();
+    _validGuesses = {...validSet, ...dictionary.where((w) => w.length == 5)};
   }
 
   static List<String> get answers {

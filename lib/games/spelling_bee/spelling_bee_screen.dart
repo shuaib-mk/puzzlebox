@@ -88,7 +88,7 @@ class _SpellingBeeScreenState extends ConsumerState<SpellingBeeScreen>
   }
 
   void _addLetter(String letter) {
-    if (_isGameComplete) return;
+    if (_isGameComplete || _currentInput.length >= 24) return;
     setState(() {
       _currentInput += letter;
     });
@@ -124,7 +124,11 @@ class _SpellingBeeScreenState extends ConsumerState<SpellingBeeScreen>
       return;
     }
 
-    final points = _validDictionary[_currentInput] ?? 0;
+    final points =
+        _validDictionary[_currentInput] ??
+        (WordList.dictionary.contains(_currentInput)
+            ? (_currentInput.length == 4 ? 1 : _currentInput.length)
+            : 0);
     if (points > 0) {
       final isPangram =
           _outerLetters.every((l) => _currentInput.contains(l)) &&

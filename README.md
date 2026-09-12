@@ -15,6 +15,10 @@ Open the APK on Android and allow installation from your browser or file manager
   <img src="docs/screenshots/home-iris-dark.png" width="260" alt="Puzzlebox in the Iris dark theme">
 </p>
 
+## Release status
+
+Version 2.1.0 improves gameplay persistence, undo, dictionary acceptance and visual design. See [release readiness](docs/RELEASE_READINESS.md) for verified coverage and the remaining Google Play steps. A successful build is not a zero-bug or Play Store approval guarantee.
+
 ## Play
 
 - **Daily Five:** six guesses, duplicate-letter feedback, real word validation, position hints, and optional hard-mode clue enforcement.

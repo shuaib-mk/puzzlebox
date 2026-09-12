@@ -1,3 +1,4 @@
+import 'strands_solver.dart';
 import 'path_generator.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -37,7 +38,6 @@ class _StrandsScreenState extends ConsumerState<StrandsScreen>
   final int _rows = 8;
   final int _cols = 6;
 
-  Map<String, List<int>> _paths = {};
   final Map<String, List<int>> _foundPaths = {};
   late StrandsThemeItem _currentTheme;
   final List<int> _selectedIndices = [];
@@ -147,10 +147,8 @@ class _StrandsScreenState extends ConsumerState<StrandsScreen>
       (_) =>
           List.generate(6, (_) => String.fromCharCode(65 + rand.nextInt(26))),
     );
-    _paths = {};
     var cursor = 0;
     for (final w in chosen) {
-      _paths[w] = path.sublist(cursor, cursor + w.length);
       for (var i = 0; i < w.length; i++) {
         final cell = path[cursor++];
         grid[cell ~/ 6][cell % 6] = w[i];
@@ -202,6 +200,20 @@ class _StrandsScreenState extends ConsumerState<StrandsScreen>
 
     if (_currentTheme.themeWords.contains(word) &&
         !_foundThemeWords.contains(word)) {
+      final remaining = _currentTheme.themeWords
+          .where((w) => w != word && !_foundThemeWords.contains(w))
+          .toList();
+      if (solveStrands(_currentTheme.grid, remaining, {
+            ..._foundIndices,
+            ..._selectedIndices,
+          }) ==
+          null) {
+        showPuzzleHint(
+          'Right word, but this route blocks another word. Try a different path.',
+        );
+        setState(() => _selectedIndices.clear());
+        return;
+      }
       setState(() {
         _foundPaths[word] = List<int>.from(_selectedIndices);
         _foundIndices.addAll(_selectedIndices);
@@ -288,7 +300,18 @@ class _StrandsScreenState extends ConsumerState<StrandsScreen>
                 .toList();
             if (remaining.isEmpty) return;
             final w = remaining.first;
-            final path = _paths[w]!;
+            final solution = solveStrands(
+              _currentTheme.grid,
+              remaining,
+              _foundIndices,
+            );
+            if (solution == null) {
+              showPuzzleHint(
+                'Undo the last word to free a path, then try Hint again.',
+              );
+              return;
+            }
+            final path = solution[w]!;
             showPuzzleHint(
               '$w starts at row ${path.first ~/ 6 + 1}, column ${path.first % 6 + 1}. Follow neighboring letters.',
             );

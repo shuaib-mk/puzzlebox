@@ -31,6 +31,7 @@ class _TilesScreenState extends ConsumerState<TilesScreen>
   int _comboChain = 0;
   int _score = 0;
 
+  final List<(List<TileItem>, int, int)> _history = [];
   TileItem? _firstSelected;
   late List<TileItem> _tiles;
 
@@ -70,16 +71,22 @@ class _TilesScreenState extends ConsumerState<TilesScreen>
         for (var j = 0; j < 2; j++) TileItem(i * 2 + j, shapes[i], Colors.blue),
     ]..shuffle(rand);
     _firstSelected = null;
+    _history.clear();
     startSession();
   }
 
   void _onTileTap(TileItem item) {
+    if (_firstSelected?.id == item.id) {
+      setState(() => _firstSelected = null);
+      return;
+    }
     setState(() {
       if (_firstSelected == null) {
         _firstSelected = item;
       } else {
         if (_firstSelected!.id != item.id &&
             _firstSelected!.shape == item.shape) {
+          _history.add((List<TileItem>.of(_tiles), _score, _comboChain));
           // Match!
           _comboChain++;
           _score += 100 * _comboChain;
@@ -156,6 +163,19 @@ class _TilesScreenState extends ConsumerState<TilesScreen>
           : 'Tiles Pattern Match — Unlimited',
       showBackButton: true,
       actions: [
+        IconButton(
+          tooltip: 'Undo match',
+          icon: const Icon(Icons.undo),
+          onPressed: _history.isEmpty || _tiles.isEmpty
+              ? null
+              : () => setState(() {
+                  final previous = _history.removeLast();
+                  _tiles = previous.$1;
+                  _score = previous.$2;
+                  _comboChain = previous.$3;
+                  _firstSelected = null;
+                }),
+        ),
         IconButton(
           icon: Icon(Icons.lightbulb_outline),
           tooltip: 'Hint',
@@ -260,7 +280,12 @@ class _TilesScreenState extends ConsumerState<TilesScreen>
                             child: Center(
                               child: Text(
                                 tile.shape,
-                                style: TextStyle(fontSize: 32),
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           ),

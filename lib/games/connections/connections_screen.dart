@@ -66,6 +66,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
   late List<String> _remainingWords;
   final List<String> _selectedWords = [];
   final List<CategoryGroup> _solvedCategories = [];
+  final Set<String> _previousGuesses = {};
   int _mistakesRemaining = 4;
   bool _isGameOver = false;
 
@@ -130,6 +131,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
         ..shuffle(rand);
       _selectedWords.clear();
       _solvedCategories.clear();
+      _previousGuesses.clear();
       _mistakesRemaining = 4;
       _isGameOver = false;
       startSession();
@@ -164,6 +166,13 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
   void _submit() {
     if (_selectedWords.length != 4 || _isGameOver) return;
 
+    final guess = (_selectedWords.toList()..sort()).join('|');
+    if (!_previousGuesses.add(guess)) {
+      showPuzzleHint(
+        'You already tried that group. Choose a different combination.',
+      );
+      return;
+    }
     CategoryGroup? matched;
     for (final cat in _categories) {
       if (_solvedCategories.contains(cat)) continue;
@@ -233,8 +242,9 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
 
   void _showBotAnalysis() {
     if (_solvedCategories.length < 4) {
-      showPuzzleHint(
-        _categories
+      finishPuzzle(
+        won: false,
+        explanation: _categories
             .where((c) => !_solvedCategories.contains(c))
             .map((c) => '${c.title}: ${c.words.join(", ")}')
             .join(' • '),
@@ -260,6 +270,8 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
       : {
           'solved': _solvedCategories.map((c) => c.title).toList(),
           'mistakes': _mistakesRemaining,
+          'guesses': _previousGuesses.toList(),
+          'selected': _selectedWords,
         };
   @override
   void restoreProgress(Map<String, dynamic> d) {
@@ -269,7 +281,13 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
     _remainingWords.removeWhere(
       (w) => _solvedCategories.any((c) => c.words.contains(w)),
     );
-    _mistakesRemaining = d['mistakes'] as int;
+    _mistakesRemaining = (d['mistakes'] as int).clamp(1, 4);
+    _previousGuesses.addAll(List<String>.from(d['guesses'] ?? []));
+    _selectedWords.addAll(
+      List<String>.from(
+        d['selected'] ?? [],
+      ).where(_remainingWords.contains).take(4),
+    );
   }
 
   @override
