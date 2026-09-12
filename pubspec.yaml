@@ -1,0 +1,48 @@
+name: puzzlebox
+description: "Puzzlebox — Daily word & logic puzzle games"
+publish_to: 'none'
+
+version: 2.0.0+2
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Local persistence
+  shared_preferences: ^2.3.3
+
+  # Share puzzle results
+  share_plus: ^10.1.4
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  riverpod_generator: ^2.6.1
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/words/daily_five_answers.txt
+    - assets/words/daily_five_valid.txt
+
+  fonts:
+    - family: PuzzleSans
+      fonts:
+        - asset: assets/fonts/roboto-regular.ttf
+        - asset: assets/fonts/roboto-bold.ttf
+          weight: 700
