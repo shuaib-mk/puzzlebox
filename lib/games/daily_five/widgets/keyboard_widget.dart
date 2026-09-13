@@ -25,9 +25,11 @@ class KeyboardWidget extends ConsumerWidget {
     final hapticsOn = ref.watch(
       settingsProvider.select((s) => s.hapticsEnabled),
     );
+    final soundOn = ref.watch(settingsProvider.select((s) => s.soundEnabled));
 
     void onKey(String key) {
       if (hapticsOn) HapticFeedback.lightImpact();
+      if (soundOn) SystemSound.play(SystemSoundType.click);
       if (key == '⌫') {
         ref.read(dailyFiveProvider(mode).notifier).deleteLetter();
       } else if (key == 'ENTER') {

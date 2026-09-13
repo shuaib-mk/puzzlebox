@@ -72,6 +72,28 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
       dividerTheme: DividerThemeData(color: colors.outlineVariant, space: 16),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 72,
+        elevation: 4,
+        indicatorColor: colors.primaryContainer,
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontFamily: 'PuzzleSans',
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w900
+                : FontWeight.w700,
+            color: states.contains(WidgetState.selected)
+                ? colors.primary
+                : colors.onSurfaceVariant,
+          ),
+        ),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }

@@ -9,6 +9,8 @@ import '../services/practice_service.dart';
 import '../services/puzzle_progression.dart';
 import '../services/date_service.dart';
 import '../providers/settings_provider.dart';
+import '../services/engagement_service.dart';
+import '../widgets/celebration_burst.dart';
 
 mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   String get gameType;
@@ -25,6 +27,7 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   bool _advanceReserved = false;
   Timer? _advanceTimer;
   Timer? _saveTimer;
+  final Stopwatch _sessionWatch = Stopwatch();
   SharedPreferences? _prefs;
   String? _sessionKey;
   String? _sessionId;
@@ -32,6 +35,9 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   Map<String, dynamic> captureProgress() => {};
   void restoreProgress(Map<String, dynamic> data) {}
   void startSession() {
+    _sessionWatch
+      ..reset()
+      ..start();
     _saveTimer?.cancel();
     _prefs = ref.read(sharedPreferencesProvider);
     _sessionKey = 'session_v2_${gameType}_${mode.name}_$difficulty';
@@ -88,7 +94,7 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         .getSolvedCount(gameType);
     difficulty =
         ref.read(sharedPreferencesProvider).getString('difficulty_$gameType') ??
-        'Medium';
+        ref.read(settingsProvider).defaultDifficulty;
     if (!['Easy', 'Medium', 'Hard'].contains(difficulty)) difficulty = 'Medium';
     final prefs = ref.read(sharedPreferencesProvider);
     for (final level in ['Easy', 'Medium', 'Hard']) {
@@ -110,6 +116,9 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (ref.read(settingsProvider).hapticsEnabled) {
       HapticFeedback.mediumImpact();
     }
+    if (ref.read(settingsProvider).soundEnabled) {
+      SystemSound.play(SystemSoundType.click);
+    }
     try {
       if (mode == GameMode.practice && won) {
         final count = await ref
@@ -117,6 +126,16 @@ mixin PracticeModeMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
             .recordSolved(gameType, puzzleRequest.id);
         if (!mounted || generation != _generation) return;
         setState(() => _practiceSolvedCount = count);
+      }
+      if (won) {
+        await ref
+            .read(engagementServiceProvider)
+            .recordCompletion(
+              game: gameType,
+              difficulty: difficulty,
+              seconds: _sessionWatch.elapsed.inSeconds,
+            );
+        if (mounted) showCelebrationBurst(context);
       }
       if (!mounted || generation != _generation) return;
       await ref.read(puzzleProgressionProvider).advance(_progressionKey);

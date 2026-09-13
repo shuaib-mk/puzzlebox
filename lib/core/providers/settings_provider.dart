@@ -17,6 +17,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   static const _hapticsKey = 'settings_haptics';
   static const _hardModeKey = 'settings_hard_mode';
   static const _soundKey = 'settings_sound';
+  static const _difficultyKey = 'settings_default_difficulty';
 
   @override
   SettingsState build() {
@@ -25,12 +26,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final haptics = prefs.getBool(_hapticsKey) ?? true;
     final hardMode = prefs.getBool(_hardModeKey) ?? false;
     final sound = prefs.getBool(_soundKey) ?? true;
+    final defaultDifficulty = prefs.getString(_difficultyKey) ?? 'Medium';
     return SettingsState(
       themeMode: ThemeMode.values[themeIndex.clamp(0, 2)],
       palette: (prefs.getInt('settings_palette') ?? 1).clamp(0, 3),
       hapticsEnabled: haptics,
       hardModeEnabled: hardMode,
       soundEnabled: sound,
+      defaultDifficulty: defaultDifficulty,
     );
   }
 
@@ -57,6 +60,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await prefs.setBool(_soundKey, enabled);
     state = state.copyWith(soundEnabled: enabled);
   }
+
+  Future<void> setDefaultDifficulty(String difficulty) async {
+    if (!const ['Easy', 'Medium', 'Hard'].contains(difficulty)) return;
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_difficultyKey, difficulty);
+    state = state.copyWith(defaultDifficulty: difficulty);
+  }
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(
@@ -69,6 +80,7 @@ class SettingsState {
   final bool hapticsEnabled;
   final bool hardModeEnabled;
   final bool soundEnabled;
+  final String defaultDifficulty;
 
   const SettingsState({
     this.palette = 0,
@@ -76,6 +88,7 @@ class SettingsState {
     required this.hapticsEnabled,
     required this.hardModeEnabled,
     required this.soundEnabled,
+    this.defaultDifficulty = 'Medium',
   });
 
   SettingsState copyWith({
@@ -84,6 +97,7 @@ class SettingsState {
     bool? hapticsEnabled,
     bool? hardModeEnabled,
     bool? soundEnabled,
+    String? defaultDifficulty,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -91,6 +105,7 @@ class SettingsState {
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
       hardModeEnabled: hardModeEnabled ?? this.hardModeEnabled,
       soundEnabled: soundEnabled ?? this.soundEnabled,
+      defaultDifficulty: defaultDifficulty ?? this.defaultDifficulty,
     );
   }
 }

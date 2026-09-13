@@ -11,6 +11,7 @@ class AppScaffold extends ConsumerWidget {
   final List<Widget>? actions;
   final Widget? bottomNavigationBar;
   final bool showBackButton;
+  final bool showSettingsAction;
 
   const AppScaffold({
     super.key,
@@ -19,6 +20,7 @@ class AppScaffold extends ConsumerWidget {
     this.actions,
     this.bottomNavigationBar,
     this.showBackButton = false,
+    this.showSettingsAction = true,
   });
 
   @override
@@ -34,17 +36,18 @@ class AppScaffold extends ConsumerWidget {
         automaticallyImplyLeading: showBackButton,
         actions: [
           ...?actions,
-          IconButton(
-            icon: Icon(Icons.palette_outlined),
-            tooltip: 'Appearance & settings',
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => SingleChildScrollView(
-                child: SettingsSheet(helpText: rulesFor(title)),
+          if (showSettingsAction)
+            IconButton(
+              icon: Icon(Icons.palette_outlined),
+              tooltip: 'Appearance & settings',
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => SingleChildScrollView(
+                  child: SettingsSheet(helpText: rulesFor(title)),
+                ),
               ),
             ),
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1),

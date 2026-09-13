@@ -7,6 +7,7 @@ import '../../../core/providers/settings_provider.dart';
 import '../../../core/services/date_service.dart';
 import '../../../core/services/stats_service.dart';
 import '../../../core/services/practice_service.dart';
+import '../../../core/services/engagement_service.dart';
 import '../../../core/widgets/game_mode_toggle.dart';
 import '../logic/daily_five_logic.dart';
 import '../logic/word_list.dart';
@@ -184,6 +185,16 @@ class DailyFiveNotifier extends FamilyNotifier<DailyFiveState, GameMode> {
         _gameType,
         '${ref.read(puzzleProgressionProvider).index(_gameType)}:${state.answer}',
       );
+    }
+    if (won) {
+      final difficulty =
+          ref
+              .read(sharedPreferencesProvider)
+              .getString('difficulty_daily_five') ??
+          ref.read(settingsProvider).defaultDifficulty;
+      await ref
+          .read(engagementServiceProvider)
+          .recordCompletion(game: _gameType, difficulty: difficulty);
     }
 
     await _saveState();

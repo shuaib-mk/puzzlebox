@@ -11,4 +11,4 @@ Sharing a result opens Android's share sheet. Only the result you choose to shar
 
 Puzzlebox does not request access to contacts, precise location, microphone, camera, or photos. It does not sell personal data.
 
-For questions or deletion guidance, contact q04ti through github.com/shuaib-mk/puzzlebox/issues. Do not include private information in a public issue.
+For questions or deletion guidance, visit q04ti.dev. Do not include private information in a public message.

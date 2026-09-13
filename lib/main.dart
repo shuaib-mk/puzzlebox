@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'games/daily_five/logic/word_list.dart';
-import 'screens/home_screen.dart';
+import 'screens/app_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,7 +47,7 @@ class PuzzleboxApp extends ConsumerWidget {
       theme: AppTheme.build(Brightness.light, settings.palette),
       darkTheme: AppTheme.build(Brightness.dark, settings.palette),
       themeMode: settings.themeMode,
-      home: const HomeScreen(),
+      home: const AppShell(),
     );
   }
 }

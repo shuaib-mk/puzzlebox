@@ -2,7 +2,7 @@ name: puzzlebox
 description: "Puzzlebox — Daily word & logic puzzle games"
 publish_to: 'none'
 
-version: 2.1.1+4
+version: 2.2.0+5
 
 environment:
   sdk: ^3.12.2
@@ -20,6 +20,7 @@ dependencies:
 
   # Share puzzle results
   share_plus: ^10.1.4
+  url_launcher: ^6.3.1
 
   # Icons
   cupertino_icons: ^1.0.8
