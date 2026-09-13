@@ -45,30 +45,3 @@ These are Puzzlebox's own implementations. Crossword uses compact crisscross lay
 ## Development
 
 Validated with Flutter 3.44.8 / Dart 3.12.2. The app uses Riverpod 2 and SharedPreferences. This checkout did not contain Hive or a Supabase backend. The app therefore runs entirely locally; no server credentials are required.
-
-```sh
-flutter pub get
-flutter analyze
-flutter test
-flutter run
-```
-
-To create a signed release, provide an ignored `android/key.properties`:
-
-```properties
-storePassword=YOUR_PRIVATE_PASSWORD
-keyPassword=YOUR_PRIVATE_PASSWORD
-keyAlias=puzzlebox
-storeFile=puzzlebox-release.jks
-```
-
-Place the matching private keystore in `android/app/`, then run `flutter build apk --release`. Keep the same private signing key for future updates. **Never commit the keystore or passwords.** The release key and properties for this build are retained in the local project and excluded from Git.
-
-The visual test writes review screenshots into a sibling `previews/` folder. It loads the bundled fonts and Material icon font, so it does not need online font services.
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Feature and verification checklist](docs/FEATURES.md)
-- [Design system](docs/DESIGN.md)
-- [Privacy](docs/PRIVACY.md)
-
-Nunito is bundled for offline typography. Its license is in `assets/fonts/Nunito-OFL.txt`; the accepted English word list license is in `assets/words/english-LICENSE.md`. Third-party components retain their own licenses.
