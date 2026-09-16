@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../core/providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -99,48 +97,9 @@ class SettingsScreen extends ConsumerWidget {
             value: state.hardModeEnabled,
             onChanged: notifier.setHardModeEnabled,
           ),
-          const SizedBox(height: 28),
-          const _Label('SUPPORT Q04TI'),
-          const SizedBox(height: 8),
-          Text(
-            'Puzzlebox is free. If you enjoy it, optional support helps q04ti keep making games.',
-            style: TextStyle(color: colors.onSurfaceVariant, height: 1.45),
-          ),
-          const SizedBox(height: 8),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.language_rounded),
-            title: const Text('q04ti.dev'),
-            subtitle: const Text('Website and projects'),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => _open(context, 'https://q04ti.dev'),
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.favorite_rounded),
-            title: const Text('Buy q04ti a coffee'),
-            subtitle: const Text('Optional support — thank you'),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => _open(context, 'https://buymeacoffee.com/q04ti'),
-          ),
         ],
       ),
     );
-  }
-
-  Future<void> _open(BuildContext context, String url) async {
-    if (!await launchUrl(
-          Uri.parse(url),
-          mode: LaunchMode.externalApplication,
-        ) &&
-        context.mounted) {
-      await Clipboard.setData(ClipboardData(text: url));
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Link copied')));
-      }
-    }
   }
 }
 
