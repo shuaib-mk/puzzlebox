@@ -13,6 +13,8 @@ import '../games/pips/pips_screen.dart';
 import '../games/tiles/tiles_screen.dart';
 import '../games/letter_boxed/letter_boxed_screen.dart';
 import '../games/vertex/vertex_screen.dart';
+import '../games/chess/chess_screen.dart';
+import '../games/ludo/ludo_screen.dart';
 import '../core/widgets/puzzle_pal.dart';
 import '../core/widgets/pressable_scale.dart';
 import '../core/services/engagement_service.dart';
@@ -115,6 +117,22 @@ class _HomeState extends ConsumerState<HomeScreen> {
       'Patterns',
       const VertexScreen(),
     ),
+    (
+      'chess',
+      'Chess',
+      'Tactics puzzles, vs AI, and Pass & Play.',
+      Icons.extension_rounded,
+      'Logic',
+      const ChessScreen(),
+    ),
+    (
+      'ludo',
+      'Ludo',
+      'Roll the dice, race your tokens, and win.',
+      Icons.casino_rounded,
+      'Logic',
+      const LudoScreen(),
+    ),
   ];
   @override
   Widget build(BuildContext context) {
@@ -188,7 +206,7 @@ class _HomeState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    '11 games. Always free. Play offline.',
+                    '${_games.length} games. Always free. Play offline.',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: colors.onPrimaryContainer,

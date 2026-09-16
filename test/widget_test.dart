@@ -17,6 +17,8 @@ import 'package:puzzlebox/games/pips/pips_screen.dart';
 import 'package:puzzlebox/games/tiles/tiles_screen.dart';
 import 'package:puzzlebox/games/letter_boxed/letter_boxed_screen.dart';
 import 'package:puzzlebox/games/vertex/vertex_screen.dart';
+import 'package:puzzlebox/games/chess/chess_screen.dart';
+import 'package:puzzlebox/games/ludo/ludo_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +35,7 @@ void main() {
       ),
     );
     expect(find.text('puzzlebox'), findsOneWidget);
-    expect(find.text('11 games. Always free. Play offline.'), findsOneWidget);
+    expect(find.text('13 games. Always free. Play offline.'), findsOneWidget);
   });
   final screens = <String, Widget>{
     'daily_five': const DailyFiveScreen(),
@@ -47,6 +49,8 @@ void main() {
     'tiles': const TilesScreen(),
     'letter_boxed': const LetterBoxedScreen(),
     'vertex': const VertexScreen(),
+    'chess': const ChessScreen(),
+    'ludo': const LudoScreen(),
   };
   for (final size in [const Size(390, 844), const Size(320, 700)]) {
     for (final entry in screens.entries) {
@@ -75,8 +79,10 @@ void main() {
         if (entry.key == 'letter_boxed' || entry.key == 'strands') {
           expect(find.text('Submit Word'), findsOneWidget);
         }
-        await tester.tap(find.text('Next').first);
-        await tester.pump();
+        if (entry.key != 'ludo' && entry.key != 'chess') {
+          await tester.tap(find.text('Next').first);
+          await tester.pump();
+        }
         await tester.runAsync(() async {
           await Future<void>.delayed(const Duration(milliseconds: 500));
         });
