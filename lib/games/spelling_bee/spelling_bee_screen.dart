@@ -340,24 +340,20 @@ class _SpellingBeeScreenState extends ConsumerState<SpellingBeeScreen>
                     ),
                   ),
                   // Honeycomb Actions
-                  FittedBox(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        OutlinedButton(onPressed: _delete, child: Text('Delete')),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _shuffle,
-                          tooltip: 'Shuffle',
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _isGameComplete ? null : _submit,
-                          child: Text('Enter'),
-                        ),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      OutlinedButton(onPressed: _delete, child: Text('Delete')),
+                      IconButton(
+                        icon: Icon(Icons.refresh),
+                        onPressed: _shuffle,
+                        tooltip: 'Shuffle',
+                      ),
+                      ElevatedButton(
+                        onPressed: _isGameComplete ? null : _submit,
+                        child: Text('Enter'),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16),
                   // Found Words Sheet Toggle

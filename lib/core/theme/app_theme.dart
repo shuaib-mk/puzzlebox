@@ -1,146 +1,98 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get light => build(Brightness.light, 0);
   static ThemeData get dark => build(Brightness.dark, 0);
-
   static ThemeData build(Brightness brightness, int palette) {
-    final isDark = brightness == Brightness.dark;
-
-    final colorScheme = ColorScheme(
+    const seeds = [
+      Color(0xFF2458A6),
+      Color(0xFF3D7C16),
+      Color(0xFFAD4930),
+      Color(0xFF7048A5),
+    ];
+    final colors = ColorScheme.fromSeed(
+      seedColor: seeds[palette.clamp(0, 3)],
       brightness: brightness,
-      primary: AppColors.brandAccent,
-      onPrimary: Colors.white,
-      primaryContainer: isDark ? const Color(0xFF1E293B) : AppColors.cardPaperVariant,
-      onPrimaryContainer: isDark ? AppColors.darkInkPrimary : AppColors.inkPrimary,
-      secondary: AppColors.streakFlame,
-      onSecondary: Colors.white,
-      secondaryContainer: isDark ? const Color(0xFF451A03) : const Color(0xFFFFF7ED),
-      onSecondaryContainer: isDark ? const Color(0xFFFFEDD5) : const Color(0xFF9A3412),
-      surface: isDark ? AppColors.cardSlate : AppColors.paperCanvas,
-      onSurface: isDark ? AppColors.darkInkPrimary : AppColors.inkPrimary,
-      onSurfaceVariant: isDark ? AppColors.darkInkSecondary : AppColors.inkSecondary,
-      outline: isDark ? AppColors.borderSlate : AppColors.borderPaper,
-      outlineVariant: isDark ? const Color(0xFF2E2E36) : const Color(0xFFE7DFD3),
-      error: const Color(0xFFEF4444),
-      onError: Colors.white,
     );
-
     return ThemeData(
       useMaterial3: true,
       fontFamily: 'PuzzleSans',
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
+      colorScheme: colors,
+      scaffoldBackgroundColor: colors.surface,
       visualDensity: VisualDensity.standard,
       textTheme: Typography.material2021().black.apply(
         fontFamily: 'PuzzleSans',
-        bodyColor: colorScheme.onSurface,
-        displayColor: colorScheme.onSurface,
+        bodyColor: colors.onSurface,
+        displayColor: colors.onSurface,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'PuzzleSans',
-          fontSize: 26,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.8,
-          color: colorScheme.onSurface,
-        ),
-      ),
-      searchBarTheme: SearchBarThemeData(
-        elevation: const WidgetStatePropertyAll(0),
-        backgroundColor: WidgetStatePropertyAll(
-          isDark ? const Color(0xFF26262C) : Colors.white,
-        ),
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: colorScheme.outlineVariant, width: 1.5),
-          ),
-        ),
-        hintStyle: WidgetStatePropertyAll(
-          TextStyle(
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-      chipTheme: ChipThemeData(
-        backgroundColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
-        selectedColor: colorScheme.primary,
-        secondarySelectedColor: colorScheme.primary,
-        disabledColor: colorScheme.outlineVariant,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: colorScheme.outlineVariant, width: 1.5),
-        ),
-        labelStyle: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-          color: colorScheme.onSurface,
-        ),
-        secondaryLabelStyle: const TextStyle(
+          fontSize: 24,
           fontWeight: FontWeight.w800,
-          fontSize: 13,
-          color: Colors.white,
+          letterSpacing: -.7,
+          color: colors.onSurface,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
           minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          elevation: 4,
           textStyle: const TextStyle(
             fontFamily: 'PuzzleSans',
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
-          foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.outlineVariant, width: 2),
+          foregroundColor: colors.onSurface,
+          side: BorderSide(color: colors.outlineVariant, width: 2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: colorScheme.inverseSurface,
-        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: colors.inverseSurface,
+        contentTextStyle: TextStyle(color: colors.onInverseSurface),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
+      dividerTheme: DividerThemeData(color: colors.outlineVariant, space: 16),
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
-        elevation: 0,
-        backgroundColor: isDark ? const Color(0xFF18181B) : Colors.white,
-        indicatorColor: colorScheme.primary.withValues(alpha: 0.15),
+        elevation: 4,
+        indicatorColor: colors.primaryContainer,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontFamily: 'PuzzleSans',
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w900
                 : FontWeight.w700,
-            fontSize: 12,
             color: states.contains(WidgetState.selected)
-                ? colorScheme.primary
-                : colorScheme.onSurfaceVariant,
+                ? colors.primary
+                : colors.onSurfaceVariant,
           ),
         ),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
     );
   }

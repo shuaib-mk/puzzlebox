@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/widgets/app_scaffold.dart';
 import '../core/services/practice_service.dart';
-import '../core/services/engagement_service.dart';
-import '../core/widgets/puzzle_pal.dart';
-import '../core/widgets/pressable_scale.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/category_theme.dart';
-
 import '../games/daily_five/widgets/daily_five_screen.dart';
 import '../games/connections/connections_screen.dart';
 import '../games/spelling_bee/spelling_bee_screen.dart';
@@ -21,23 +15,20 @@ import '../games/letter_boxed/letter_boxed_screen.dart';
 import '../games/vertex/vertex_screen.dart';
 import '../games/chess/chess_screen.dart';
 import '../games/ludo/ludo_screen.dart';
+import '../core/widgets/puzzle_pal.dart';
+import '../core/widgets/pressable_scale.dart';
+import '../core/services/engagement_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
-
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeState extends ConsumerState<HomeScreen> {
   String _filter = 'All';
   String _query = '';
-
-  late final AnimationController _animController;
-  late final Animation<double> _heroAnimation;
-
-  final List<(String, String, String, IconData, String, Widget)> _games = [
+  final _games = <(String, String, String, IconData, String, Widget)>[
     (
       'daily_five',
       'Daily Five',
@@ -143,51 +134,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       const LudoScreen(),
     ),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _heroAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutBack,
-    );
-
-    _animController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final disableMotion = MediaQuery.of(context).disableAnimations;
-
-    final solvedTotal = _games.fold<int>(
+    final solved = _games.fold<int>(
       0,
       (n, g) => n + ref.read(practiceServiceProvider).getSolvedCount(g.$1),
     );
-
     ref.watch(engagementRevisionProvider);
     final engagement = ref.read(engagementServiceProvider).load();
-
-    final filteredGames = _games
+    final games = _games
         .where(
           (g) =>
               (_filter == 'All' || g.$5 == _filter) &&
               '${g.$2} ${g.$3}'.toLowerCase().contains(_query.toLowerCase()),
         )
         .toList();
-
     return AppScaffold(
       title: 'puzzlebox',
       showSettingsAction: false,
@@ -196,592 +158,240 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Hero Workbench Header Card ─────────────────────────────────
-            ScaleTransition(
-              scale: disableMotion ? const AlwaysStoppedAnimation(1.0) : _heroAnimation,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E2638) : const Color(0xFFEFF6FF),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(12),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(32),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                borderRadius: BorderRadius.circular(28),
+                border: Border(
+                  bottom: BorderSide(
+                    color: colors.primary.withValues(alpha: .25),
+                    width: 5,
                   ),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.12),
-                      offset: const Offset(0, 6),
-                      blurRadius: 0,
-                    ),
-                  ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ready, set,\npuzzle!',
+                              style: TextStyle(
+                                fontSize: 32,
+                                height: 1.05,
+                                fontWeight: FontWeight.w900,
+                                color: colors.onPrimaryContainer,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'A fresh challenge.\nA little victory.',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: colors.onPrimaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const PuzzlePal(size: 100),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '${_games.length} games. Always free. Play offline.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.primary,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'DAILY WORKBENCH',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.2,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Ready, set,\npuzzle!',
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  height: 1.05,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.8,
-                                  color: colors.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '13 games. Always free. Play offline.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          color: colors.primary,
+                          size: 22,
                         ),
                         const SizedBox(width: 8),
-                        _FloatingMascot(disableMotion: disableMotion),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Streak & Solved Counters Row
-                    Row(
-                      children: [
-                        // Solved Puzzles Badge
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF161E2E) : Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: colors.outlineVariant,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.workspace_premium_rounded,
-                                  color: colors.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '$solvedTotal',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w900,
-                                          height: 1.0,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Solved',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        // Streak Flame Badge
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF2D1606) : const Color(0xFFFFF7ED),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: AppColors.streakFlame.withValues(alpha: 0.4),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                _FlickeringStreakFlame(
-                                  disableMotion: disableMotion,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${engagement.currentStreak} Days',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.streakFlame,
-                                          height: 1.0,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        engagement.currentStreak == 0
-                                            ? 'Start today'
-                                            : 'Active streak',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                        Flexible(
+                          child: Text(
+                            '$solved puzzles solved',
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    engagement.currentStreak == 0
+                        ? '🔥 Solve one today to start a streak'
+                        : '🔥 ${engagement.currentStreak} day streak',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
-
-            // ── Section Title & Filter Workbench ───────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Pick your playground',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.6,
-                  ),
-                ),
-                Text(
-                  '${_games.length} Games',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: colors.primary,
-                  ),
-                ),
-              ],
+            const Text(
+              'Pick your playground',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -.5,
+              ),
             ),
             const SizedBox(height: 12),
-
-            // Search Bar
             SearchBar(
-              hintText: 'Search puzzles...',
-              leading: Icon(
-                Icons.search_rounded,
-                color: colors.onSurfaceVariant,
-              ),
+              hintText: 'Find a game',
+              leading: const Icon(Icons.search_rounded),
+              elevation: const WidgetStatePropertyAll(0),
               onChanged: (value) => setState(() => _query = value),
             ),
             const SizedBox(height: 12),
-
-            // Category Filter Chips Row
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ['All', 'Words', 'Logic', 'Patterns'].map((filterName) {
-                  final isSelected = _filter == filterName;
-                  final categorySig = CategoryVisualSignature.of(filterName, context);
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      selected: isSelected,
-                      showCheckmark: false,
-                      avatar: filterName == 'All'
-                          ? null
-                          : Icon(
-                              categorySig.badgeIcon,
-                              size: 16,
-                              color: isSelected ? Colors.white : categorySig.primaryColor,
-                            ),
-                      label: Text(filterName),
-                      selectedColor: filterName == 'All'
-                          ? colors.primary
-                          : categorySig.primaryColor,
-                      onSelected: (_) => setState(() => _filter = filterName),
+            Wrap(
+              spacing: 8,
+              children: ['All', 'Words', 'Logic', 'Patterns']
+                  .map(
+                    (f) => ChoiceChip(
+                      label: Text(f),
+                      selected: _filter == f,
+                      onSelected: (_) => setState(() => _filter = f),
                     ),
-                  );
-                }).toList(),
-              ),
+                  )
+                  .toList(),
             ),
-            const SizedBox(height: 20),
-
-            // ── Game Cards List (Category Visual Signatures) ───────────────
-            if (filteredGames.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.search_off_rounded,
-                        size: 48,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No puzzles found for "$_query"',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              ...List.generate(filteredGames.length, (index) {
-                final game = filteredGames[index];
-                final categorySig = CategoryVisualSignature.of(game.$5, context);
-                final solvedCount = ref
-                    .read(practiceServiceProvider)
-                    .getSolvedCount(game.$1);
-
-                return AnimatedBuilder(
-                  animation: _animController,
-                  builder: (context, child) {
-                    final delay = (index * 0.05).clamp(0.0, 0.5);
-                    final animation = CurvedAnimation(
-                      parent: _animController,
-                      curve: Interval(delay, (delay + 0.5).clamp(0.0, 1.0),
-                          curve: Curves.easeOutCubic),
-                    );
-
-                    return Transform.translate(
-                      offset: disableMotion
-                          ? Offset.zero
-                          : Offset(0, 20 * (1.0 - animation.value)),
-                      child: Opacity(
-                        opacity: disableMotion ? 1.0 : animation.value,
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: PressableScale(
-                      child: Material(
-                        color: isDark ? AppColors.cardSlate : AppColors.cardPaper,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: categorySig.cardRadius,
-                          side: BorderSide(
-                            color: categorySig.primaryColor.withValues(alpha: 0.25),
-                            width: 1.5,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          key: ValueKey('${game.$1}_card'),
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => game.$6),
-                            );
-                            if (mounted) setState(() {});
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: categorySig.primaryColor.withValues(alpha: 0.08),
-                                  offset: const Offset(0, 4),
-                                  blurRadius: 0,
-                                ),
-                              ],
+            const SizedBox(height: 16),
+            ...games.map((game) {
+              final accent = [
+                const Color(0xFF157A6E),
+                const Color(0xFF286CB0),
+                const Color(0xFF8652B4),
+                const Color(0xFFA96708),
+                const Color(0xFFB84562),
+              ][_games.indexOf(game) % 5];
+              final count = ref
+                  .read(practiceServiceProvider)
+                  .getSolvedCount(game.$1);
+              return PressableScale(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Material(
+                    color: colors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: BorderSide(color: colors.outlineVariant, width: 2),
+                    ),
+                    elevation: 1,
+                    shadowColor: Colors.black26,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      key: ValueKey('${game.$1}_card'),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => game.$6),
+                        );
+                        if (mounted) setState(() {});
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: accent.withValues(alpha: .12),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                game.$4,
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? colors.onSurface
+                                    : accent,
+                                size: 28,
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                // Category Icon Tile Badge
-                                Container(
-                                  width: 54,
-                                  height: 54,
-                                  decoration: ShapeDecoration(
-                                    color: categorySig.lightBg,
-                                    shape: categorySig.badgeShape,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    game.$2,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    game.$4,
-                                    color: categorySig.primaryColor,
-                                    size: 28,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    game.$3,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colors.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-
-                                // Title & Description
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Wrap(
-                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                        spacing: 8,
-                                        runSpacing: 4,
-                                        children: [
-                                          Text(
-                                            game.$2,
-                                            style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: categorySig.primaryColor.withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              game.$5,
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w900,
-                                                color: categorySig.primaryColor,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        game.$3,
+                                  if (count > 0)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text(
+                                        '$count solved',
                                         style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: colors.onSurfaceVariant,
+                                          fontSize: 11,
+                                          color: colors.primary,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      if (solvedCount > 0)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 6),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.check_circle_rounded,
-                                                size: 13,
-                                                color: categorySig.primaryColor,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '$solvedCount solved',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: categorySig.primaryColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-
-                                // Arrow Indicator Button
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: categorySig.primaryColor.withValues(alpha: 0.1),
-                                  ),
-                                  child: Icon(
-                                    Icons.arrow_forward_rounded,
-                                    size: 18,
-                                    color: categorySig.primaryColor,
-                                  ),
-                                ),
-                              ],
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 20),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                );
-              }),
-
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'No subscriptions • Offline-first • Free forever',
-                style: TextStyle(
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.7),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                 ),
+              );
+            }),
+            const SizedBox(height: 12),
+            Text(
+              'No subscriptions. No ads. No lives to refill.\nYour progress stays on this device.',
+              style: TextStyle(
+                color: colors.onSurfaceVariant,
+                fontSize: 12,
+                height: 1.6,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Floating Mascot Widget with gentle levitation micro-animation.
-class _FloatingMascot extends StatefulWidget {
-  final bool disableMotion;
-  const _FloatingMascot({required this.disableMotion});
-
-  @override
-  State<_FloatingMascot> createState() => _FloatingMascotState();
-}
-
-class _FloatingMascotState extends State<_FloatingMascot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _offsetAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-
-    _offsetAnim = Tween<double>(begin: -3, end: 5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.disableMotion) {
-      return const PuzzlePal(size: 90);
-    }
-
-    return AnimatedBuilder(
-      animation: _offsetAnim,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _offsetAnim.value),
-          child: child,
-        );
-      },
-      child: const PuzzlePal(size: 90),
-    );
-  }
-}
-
-/// Flickering Streak Flame Widget with gentle glow animation.
-class _FlickeringStreakFlame extends StatefulWidget {
-  final bool disableMotion;
-  const _FlickeringStreakFlame({required this.disableMotion});
-
-  @override
-  State<_FlickeringStreakFlame> createState() => _FlickeringStreakFlameState();
-}
-
-class _FlickeringStreakFlameState extends State<_FlickeringStreakFlame>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-
-    _scaleAnim = Tween<double>(begin: 0.92, end: 1.1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.disableMotion) {
-      return const Icon(
-        Icons.local_fire_department_rounded,
-        color: AppColors.streakFlame,
-        size: 24,
-      );
-    }
-
-    return ScaleTransition(
-      scale: _scaleAnim,
-      child: const Icon(
-        Icons.local_fire_department_rounded,
-        color: AppColors.streakFlame,
-        size: 24,
       ),
     );
   }
